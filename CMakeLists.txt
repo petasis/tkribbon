@@ -10,6 +10,12 @@ IF ( NOT PKG_OS_ARCH )
   SET ( PKG_OS_ARCH x86_32 )
 ENDIF ( NOT PKG_OS_ARCH )
 
+IF ( ${PKG_OS_ARCH} STREQUAL "x86_64" )
+    set( PKG_ARCH_DIR "win32-x86_64" )
+ELSE ( ${PKG_OS_ARCH} STREQUAL "x86_64" )
+    set( PKG_ARCH_DIR "win32-ix86" )
+ENDIF ( ${PKG_OS_ARCH} STREQUAL "x86_64" )
+
 ## ===========================================================================
 ## Please verify that the following variables contain suitable values:
 ## ===========================================================================
@@ -34,7 +40,7 @@ PROJECT ( tkribbon )
 ## Package version information:
 SET ( PKG_NAME          ${PROJECT_NAME} )
 SET ( PKG_MAJOR_VERSION 1 )
-SET ( PKG_MINOR_VERSION 0 )
+SET ( PKG_MINOR_VERSION 1 )
 SET ( PKG_BUILD_VERSION 0 )
 ## Author:
 SET ( PKG_VENDOR        "Georgios Petasis" )
@@ -51,13 +57,13 @@ SET ( PKG_HOME_DIR      ${PROJECT_SOURCE_DIR} )
 ##  Project sources
 ## ===========================================================================
 SET ( PKG_SOURCES
-          TkRibbon.cpp
+          generic/TkRibbon.cpp
     )
 
 SET ( NO_MSVCRT ON )
 
 IF ( WIN32 )
-  SET ( PlatformDir ${PKG_HOME_DIR}/../win )
+  SET ( PlatformDir ${PKG_HOME_DIR}/win )
   
   ##
   ## Custom command: compile the Ribbon XML specification into a resource.
@@ -111,9 +117,9 @@ FIND_PACKAGE ( TCL REQUIRED )
 FIND_PACKAGE ( TclStub REQUIRED )
 
 ## Tcl/Tk info (useful for debug purposes)...
-# MESSAGE ( STATUS "  TCL_TCLSH:               " ${TCL_TCLSH} )
+  MESSAGE ( STATUS "  TCL_TCLSH:               " ${TCL_TCLSH} )
 # MESSAGE ( STATUS "  TCL_INCLUDE_PATH:        " ${TCL_INCLUDE_PATH} )
-# MESSAGE ( STATUS "  TCL_STUB_LIBRARY:        " ${TCL_STUB_LIBRARY} )
+  MESSAGE ( STATUS "  TCL_STUB_LIBRARY:        " ${TCL_STUB_LIBRARY} )
 # MESSAGE ( STATUS "  TCL_LIBRARY:             " ${TCL_LIBRARY} )
 # MESSAGE ( STATUS "  TK_WISH:                 " ${TK_WISH} )
 # MESSAGE ( STATUS "  TK_INCLUDE_PATH:         " ${TK_INCLUDE_PATH} )
@@ -169,9 +175,9 @@ IF ( WIN32 AND NO_MSVCRT )
 ENDIF ( WIN32 AND NO_MSVCRT )
 
 ## Package global definitions...
-ADD_DEFINITIONS     ( -DPACKAGE_NAME="${PKG_NAME}" )
-ADD_DEFINITIONS     ( -DPACKAGE_VERSION="${PKG_VERSION}" )
-ADD_DEFINITIONS     ( -DPACKAGE_NAME_VERSION="${PKG_NAME_VERSION}" )
+ADD_DEFINITIONS ( -DPACKAGE_NAME="${PKG_NAME}" )
+ADD_DEFINITIONS ( -DPACKAGE_VERSION="${PKG_VERSION}" )
+ADD_DEFINITIONS ( -DPACKAGE_NAME_VERSION="${PKG_NAME_VERSION}" )
 
 ## ===========================================================================
 ##  Declare the package shared library target...
@@ -183,21 +189,32 @@ ADD_LIBRARY ( ${PKG_TARGET_LIB_NAME} SHARED ${PKG_SOURCES} )
 ## ===========================================================================
 ##  Generate the pkgIndex.tcl file...
 ## ===========================================================================
-FILE ( WRITE ../library/pkgIndex.tcl 
-"package ifneeded tkribbon ${PKG_VERSION} \\
-  [list load [file join $dir lib${PKG_TARGET_LIB_NAME}[info sharedlibextension]] tkribbon]" )
+FILE ( WRITE library/pkgIndex.tcl 
+"namespace eval ::tkribbon {
+  if {[catch {package require platform}]} {
+    ## Set platform variable to \"win32-x86_64\" if using 64-bit Tcl.
+    variable platform win32-ix86
+  } else {
+    variable platform [::platform::generic]
+  }
+  variable version ${PKG_VERSION}
+};# namespace tkribbon
+
+package ifneeded tkribbon ${PKG_VERSION} \\
+  [list load [file join $dir $::tkribbon::platform lib${PKG_TARGET_LIB_NAME}[info sharedlibextension]] tkribbon]" )
 
 ## ===========================================================================
 ##  Declare the package install targets...
 ## ===========================================================================
 
-SET ( CMAKE_INSTALL_PREFIX C:/TclApps/Tcl/lib )
+# SET ( CMAKE_INSTALL_PREFIX C:/TclApps/Tcl/lib )
 
 INSTALL ( TARGETS ${PKG_TARGET_LIB_NAME}
-          RUNTIME DESTINATION ${PKG_TARGET_LIB_NAME}
-          LIBRARY DESTINATION ${PKG_TARGET_LIB_NAME}
-          ARCHIVE DESTINATION ${PKG_TARGET_LIB_NAME} )
-INSTALL ( FILES ../library/pkgIndex.tcl ../library/tkribbon.tcl
+          RUNTIME DESTINATION ${PKG_TARGET_LIB_NAME}/${PKG_ARCH_DIR}
+          LIBRARY DESTINATION ${PKG_TARGET_LIB_NAME}/${PKG_ARCH_DIR}
+          ARCHIVE DESTINATION ${PKG_TARGET_LIB_NAME}/${PKG_ARCH_DIR}
+ )
+INSTALL ( FILES library/pkgIndex.tcl library/tkribbon.tcl
           DESTINATION ${PKG_TARGET_LIB_NAME} )
 
 ## ===========================================================================
@@ -213,9 +230,9 @@ SET ( CPACK_SOURCE_PACKAGE_FILE_NAME              ${PKG_NAME_VERSION} )
 SET ( CPACK_PACKAGE_INSTALL_DIRECTORY             ${PKG_NAME_VERSION} )
 SET ( CPACK_PACKAGE_INSTALL_REGISTRY_KEY          ${PKG_NAME_VERSION} )
 SET ( CPACK_RESOURCE_FILE_LICENSE
-      ${PKG_HOME_DIR}/doc/ContactInfo/License_LGPL.rtf )
+      ${PKG_HOME_DIR}/LICENSE )
 SET ( CPACK_RESOURCE_FILE_README
-      ${PKG_HOME_DIR}/doc/ContactInfo/License_LGPL.txt )
+      ${PKG_HOME_DIR}/README.md )
 SET ( CPACK_PACKAGE_EXECUTABLES
      ${PKG_NAME} )
 # SET ( CPACK_PACKAGE_DESCRIPTION_FILE     "" )
@@ -232,7 +249,6 @@ IF(WIN32 AND NOT UNIX)
 ELSE(WIN32 AND NOT UNIX)
 ENDIF(WIN32 AND NOT UNIX)
 
-
 ## ===========================================================================
 ##  Project Package Generator: Load the package generator (CPack)
 ## ===========================================================================
@@ -240,5 +256,3 @@ INCLUDE ( CPack )
 MESSAGE ( STATUS "  * Binary Package Generator: " ${CPACK_GENERATOR} )
 MESSAGE ( STATUS "  * Source Package Generator: " ${CPACK_SOURCE_GENERATOR} )
 MESSAGE ( STATUS "  * Installer package name:   " ${CPACK_PACKAGE_FILE_NAME} )
-
-
