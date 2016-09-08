@@ -199,3 +199,46 @@ INSTALL ( TARGETS ${PKG_TARGET_LIB_NAME}
           ARCHIVE DESTINATION ${PKG_TARGET_LIB_NAME} )
 INSTALL ( FILES ../library/pkgIndex.tcl ../library/tkribbon.tcl
           DESTINATION ${PKG_TARGET_LIB_NAME} )
+
+## ===========================================================================
+##  Project Package Generator
+## ===========================================================================
+MESSAGE ( STATUS "Generating Packaging Information..." )
+SET ( CPACK_PACKAGE_NAME                          ${PKG_NAME} )
+SET ( CPACK_PACKAGE_VENDOR                        ${PKG_VENDOR} )
+SET ( CPACK_PACKAGE_VERSION_MAJOR                 ${PKG_MAJOR_VERSION} )
+SET ( CPACK_PACKAGE_VERSION_MINOR                 ${PKG_MINOR_VERSION} )
+SET ( CPACK_PACKAGE_VERSION_PATCH                 ${PKG_BUILD_VERSION} )
+SET ( CPACK_SOURCE_PACKAGE_FILE_NAME              ${PKG_NAME_VERSION} )
+SET ( CPACK_PACKAGE_INSTALL_DIRECTORY             ${PKG_NAME_VERSION} )
+SET ( CPACK_PACKAGE_INSTALL_REGISTRY_KEY          ${PKG_NAME_VERSION} )
+SET ( CPACK_RESOURCE_FILE_LICENSE
+      ${PKG_HOME_DIR}/doc/ContactInfo/License_LGPL.rtf )
+SET ( CPACK_RESOURCE_FILE_README
+      ${PKG_HOME_DIR}/doc/ContactInfo/License_LGPL.txt )
+SET ( CPACK_PACKAGE_EXECUTABLES
+     ${PKG_NAME} )
+# SET ( CPACK_PACKAGE_DESCRIPTION_FILE     "" )
+SET ( CPACK_PACKAGE_DESCRIPTION_SUMMARY
+     "${PKG_NAME} is a natural language engineering platform/IDE" )
+
+## ===========================================================================
+##  Project Package Generator: NSIS Additional Information
+## ===========================================================================
+IF(WIN32 AND NOT UNIX)
+  SET ( CPACK_NSIS_HELP_LINK      "http://www.ellogon.org" )
+  SET ( CPACK_NSIS_URL_INFO_ABOUT "http://www.ellogon.org" )
+  SET ( CPACK_NSIS_CONTACT        "petasis@iit.demokritos.gr" )
+ELSE(WIN32 AND NOT UNIX)
+ENDIF(WIN32 AND NOT UNIX)
+
+
+## ===========================================================================
+##  Project Package Generator: Load the package generator (CPack)
+## ===========================================================================
+INCLUDE ( CPack )
+MESSAGE ( STATUS "  * Binary Package Generator: " ${CPACK_GENERATOR} )
+MESSAGE ( STATUS "  * Source Package Generator: " ${CPACK_SOURCE_GENERATOR} )
+MESSAGE ( STATUS "  * Installer package name:   " ${CPACK_PACKAGE_FILE_NAME} )
+
+
