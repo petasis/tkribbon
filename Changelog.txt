@@ -1,0 +1,17 @@
+2013-05-07  George Petasis  <petasisg@yahoo.gr>
+
+  * win/TkRibbon.cpp:
+  * win/TkRibbonProperties.cpp: Added call to FreeLibrary(), for unloading
+  DLLs containing resources, loaded with "load_resources" subcommand.
+
+2010-06-27  George Petasis  <petasisg@yahoo.gr>
+
+  * generic/TkRibbon.cpp:
+  * generic/TkRibbonProperties.cpp: Added support for specifying images
+  in collections.
+
+2010-01-18  George Petasis  <petasisg@yahoo.gr>
+
+  * generic/TkRibbon.cpp:
+
+  * tkribbon started.
